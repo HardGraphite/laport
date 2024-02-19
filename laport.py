@@ -291,6 +291,14 @@ def run_server(portal_param: PortalParam, host: str , port: int):
     server.server_close()
 
 
+def find_lan_ip() -> str | None:
+    import ipaddress
+    import socket
+    for host in socket.gethostbyname_ex(socket.gethostname())[-1]:
+        if ipaddress.ip_address(host).is_private:
+            return host
+
+
 def random_path(n: int) -> str:
     chars = ['/']
     for _ in range(n):
@@ -302,7 +310,7 @@ def main():
     ap = argparse.ArgumentParser()
     g = ap.add_mutually_exclusive_group(required=True)
     ap.add_argument(
-        '--addr', default='0.0.0.0',
+        '--addr', default=(find_lan_ip() or 'localhost'),
         help='server address'
     )
     ap.add_argument(
