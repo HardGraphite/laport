@@ -44,7 +44,7 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         super().__init__(request, client_address, server)
 
     def do_GET(self):
-        if self.path != self.portal_param.path:
+        if self.path.lower() != self.portal_param.path.lower():
             self.send_error(404)
             return
         match self.portal_param.type:
@@ -58,7 +58,7 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 self.page_paste_text()
 
     def do_POST(self):
-        if self.path != self.portal_param.path:
+        if self.path.lower() != self.portal_param.path.lower():
             self.send_error(404)
             return
         match self.portal_param.type:
@@ -261,9 +261,21 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         return True
 
 
+def show_qr_code(data: str):
+    try:
+        import pyqrcode
+        code = pyqrcode.create(data.upper(), error='L', mode='alphanumeric')
+        print(code.terminal(quiet_zone=1))
+        return
+    except Exception:
+        pass
+    print('(QR code not available)')
+
+
 def show_service_url(host: str , port: int, path: str):
     url = f'http://{host}:{port}{path}'
-    print('Visit:', url)
+    print('Visit:', url, ', or scan the QR code:')
+    show_qr_code(url)
 
 
 def run_server(portal_param: PortalParam, host: str , port: int):
